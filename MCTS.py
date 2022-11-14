@@ -24,6 +24,9 @@ class MonteCarloTreeSearchNode():
         self._untried_actions = list(gogame.valid_moves(self.state))
         return self._untried_actions
 
+    def n(self):
+        return self._number_of_visits
+
     # Method for finding nodes winrate. Result[0] is number of ties, [1] is number of wins and [-1] is losses
     def q(self):
         wins = self._results[1]
@@ -112,7 +115,7 @@ def move(state):
     return selected_node
 
 
-go_env = gym.make('gym_go:go-v0', size=5, komi=0, reward_method='real')
+go_env = gym.make('gym_go:go-v0', size=5, komi=0, reward_method='heuristic')
 go_env.reset()
 
 state, reward, done, info = go_env.step((1, 1))
