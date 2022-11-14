@@ -1,5 +1,24 @@
-.idea/
-*.egg-info/
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
 __pycache__/
 .ipynb_checkpoints/
+
+# JetBrains related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# VSCode related
 .vscode/
+
+# GymGo related
+GymGo-master/
+*.egg-info/
