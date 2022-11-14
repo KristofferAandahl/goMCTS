@@ -19,18 +19,18 @@ class MonteCarloTreeSearchNode():
         self.komi = komi
         return
 
+    # A list of 1s and 0s. 1 is unvisited valid move. Used in expand to find moves to expand the tree with
     def untried_actions(self):
         self._untried_actions = list(gogame.valid_moves(self.state))
         return self._untried_actions
 
+    # Method for finding nodes winrate. Result[0] is number of ties, [1] is number of wins and [-1] is losses
     def q(self):
         wins = self._results[1]
         loses = self._results[-1]
         return wins - loses
 
-    def n(self):
-        return self._number_of_visits
-
+    # Creates a new node based on a random move and updates the untried action list
     def expand(self):
         action = gogame.random_action(self.state)
         while self._untried_actions[action] == 0:
@@ -43,9 +43,12 @@ class MonteCarloTreeSearchNode():
         self.children.append(child_node)
         return child_node
 
+    # Checks if game is finished in the current node
     def is_terminal_node(self):
         return gogame.game_ended(self.state)
 
+    # Continues the current state with random moves, does not save the moves, but checks who won then the game
+    # at the end of the rollout
     def rollout(self):
         current_rollout_state = self.state
 
@@ -54,12 +57,14 @@ class MonteCarloTreeSearchNode():
             current_rollout_state = gogame.next_state(current_rollout_state, action)
         return gogame.winning(current_rollout_state, self.komi)
 
+    # Updates statistics for the node and its parent chain
     def backpropagate(self, result):
         self._number_of_visits += 1.
         self._results[result] += 1.
         if self.parent:
             self.parent.backpropagate(result)
 
+    # Checks if all moves are checked in the current node
     def is_fully_expanded(self):
         expand = 0
         for i in self._untried_actions:
@@ -67,10 +72,10 @@ class MonteCarloTreeSearchNode():
         return expand == 0
 
     def best_child(self, c_param=0.1):
-
         choices_weights = [(c.q() / c.n()) + c_param * np.sqrt((2 * np.log(self.n()) / c.n())) for c in self.children]
         return self.children[np.argmax(choices_weights)]
 
+    # Defines how the tree comitts rollouts. Currently unused. Better policies creates a more efficient system
     def rollout_policy(self):
         possible_moves = gogame.valid_moves(self.state)
         r = np.random.randint(len(possible_moves))
@@ -78,6 +83,7 @@ class MonteCarloTreeSearchNode():
             r = np.random.randint(len(possible_moves))
         return r
 
+    # Drives the tree expansion
     def _tree_policy(self):
 
         current_node = self
