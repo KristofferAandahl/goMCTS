@@ -5,8 +5,10 @@ from gym_go import gogame
 
 
 class MonteCarloTreeSearchNode():
-    def __init__(self, state, komi, parent=None, parent_action=None):
+    # Color should be b or w
+    def __init__(self, state, color, komi, parent=None, parent_action=None):
         self.state = state
+        self.color = color
         self.parent = parent
         self.parent_action = parent_action
         self.children = []
@@ -29,9 +31,12 @@ class MonteCarloTreeSearchNode():
 
     # Method for finding nodes winrate. Result[0] is number of ties, [1] is number of wins and [-1] is losses
     def q(self):
-        wins = self._results[1]
-        loses = self._results[-1]
-        return wins - loses
+        black = self._results[1]
+        white = self._results[-1]
+        if self.color == 'b':
+            return black - white
+        else:
+            return white - black
 
     # Creates a new node based on a random move and updates the untried action list
     def expand(self):
@@ -42,7 +47,7 @@ class MonteCarloTreeSearchNode():
         self._untried_actions[action] = 0
         next_state = gogame.next_state(self.state, action)
         child_node = MonteCarloTreeSearchNode(
-            next_state, self.komi, parent=self, parent_action=action)
+            next_state, self.color, self.komi, parent=self, parent_action=action)
         self.children.append(child_node)
         return child_node
 
@@ -109,18 +114,24 @@ class MonteCarloTreeSearchNode():
         return self.best_child(c_param=0.)
 
 
-def move(state):
-    root = MonteCarloTreeSearchNode(state, 0)
+def move(state, color):
+    root = MonteCarloTreeSearchNode(state, color, 0)
     selected_node = root.best_action()
     return selected_node
 
 
-go_env = gym.make('gym_go:go-v0', size=5, komi=0, reward_method='heuristic')
+go_env = gym.make('gym_go:go-v0', size=5, komi=0, reward_method='real')
 go_env.reset()
 
 state, reward, done, info = go_env.step((1, 1))
 
-while done == False:
-    state, reward, done, info = go_env.step(move(state).parent_action)
+for i in range(25):
+    state, reward, done, info = go_env.step(move(state, 'w').parent_action)
+    if done:
+        break
+    state, reward, done, info = go_env.step(move(state, 'b').parent_action)
+    if done:
+        break
+    go_env.render('human')
 
 go_env.render('human')
