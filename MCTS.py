@@ -104,11 +104,17 @@ class MonteCarloTreeSearchNode():
         return current_node
 
     def best_action(self):
+        # How many moves are considered
         simulation_no = 100
 
         for i in range(simulation_no):
             v = self._tree_policy()
-            reward = v.rollout()
+            reward = 0
+            # How many variants are considered
+            quality = 5
+            for i in range(quality):
+                reward += v.rollout()
+            reward /= quality
             v.backpropagate(reward)
 
         return self.best_child(c_param=0.)
