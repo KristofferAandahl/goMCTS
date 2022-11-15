@@ -5,13 +5,13 @@ import gym
 
 
 # Creates random moves until the game is done and returns the winner
-def rand_agent(state, komi, runs):
+def rand_agent(state, komi, settings):
     score = 0
-    for i in range(runs):
+    for i in range(settings[0]):
         current_rollout_state = state
         while not gogame.game_ended(current_rollout_state):
             action = gogame.random_action(current_rollout_state)
             current_rollout_state = gogame.next_state(current_rollout_state, action)
         score += gogame.winning(current_rollout_state, komi)
-    return score / runs
+    return score / settings[0]
 

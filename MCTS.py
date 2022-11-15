@@ -62,7 +62,7 @@ class MonteCarloTreeSearchNode():
     # Continues the current state with random moves, does not save the moves, but checks who won then the game
     # at the end of the rollout
     def rollout(self):
-        return self.agent(self.state, self.komi, self.settings[0])
+        return self.agent(self.state, self.komi, self.settings)
 
     # Updates statistics for the node and its parent chain
     def backpropagate(self, result):
