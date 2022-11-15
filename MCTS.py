@@ -1,9 +1,6 @@
 import numpy as np
 from collections import defaultdict
-import gym
-import rollout_agents as agents
 from gym_go import gogame
-
 
 class MonteCarloTreeSearchNode():
     # Color should be b or w
@@ -110,8 +107,3 @@ class MonteCarloTreeSearchNode():
             v.backpropagate(v.rollout())
 
         return self.best_child(c_param=0.)
-
-
-
-
-

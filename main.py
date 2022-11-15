@@ -1,22 +1,29 @@
-import gym
+import gym # https://github.com/aigagror/GymGo
 from gym_go import gogame
-import MCTS
 from player import player
 from rollout_agents import rand_agent
 
-go_env = gym.make('gym_go:go-v0', size=5, komi=0, reward_method='real')
-go_env.reset()
-state = gogame.init_state(5)
+# Game variables
+renderer = 'terminal'           # 'terminal' or 'human'
+boardsize = 5                   # From task: 5x5 or 7x7
+komi = 0                        # Standard komi is 7.5 points under the Chinese rules (https://en.wikipedia.org/wiki/Komi_(Go))
+reward_method = 'heuristic'     # The reward is black 'area - white area'. If black won, the reward is 'BOARD_SIZE**2'. If white won, the reward is '-BOARD_SIZE**2'. If tied, the reward is '0'.
 
-black = player('b', rand_agent, [10], 3, 0)
-white = player('w', rand_agent, [10], 3, 0)
+# Initialize environment
+env = gym.make('gym_go:go-v0', size=boardsize, komi=komi, reward_method=reward_method)
+env.reset()
 
-for i in range(25):
-    state, reward, done, info = go_env.step(black.move(state))
-    if done:
+# Run game
+done = 0
+state = gogame.init_state(boardsize)    # Initial boardstate (empty)
+black = player('b', rand_agent, [10], 3, komi)
+white = player('w', rand_agent, [10], 3, komi)
+
+while not done:
+    try:
+        state, reward, done, info = env.step(black.move(state))
+        env.render(renderer)
+        state, reward, done, info = env.step(white.move(state))
+        env.render(renderer)
+    except: 
         break
-    state, reward, done, info = go_env.step(white.move(state))
-    if done:
-        break
-    go_env.render('human')
-go_env.render('human')

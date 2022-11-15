@@ -1,6 +1,5 @@
 import MCTS
 
-
 class player:
     def __init__(self, color, agent, settings, simulation_no, komi):
         self.color = color

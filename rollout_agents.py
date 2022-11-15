@@ -4,7 +4,6 @@ from gym_go import gogame
 import gym
 import numpy as np
 
-
 # Creates random moves until the game is done and returns the winner
 def rand_agent(state, komi, settings):
     score = 0
@@ -15,7 +14,6 @@ def rand_agent(state, komi, settings):
             current_rollout_state = gogame.next_state(current_rollout_state, action)
         score += gogame.winning(current_rollout_state, komi)
     return score / settings[0]
-
 
 # Checks the score in the state
 # Creates an aggresive AI which struggles with keeping groups alive
