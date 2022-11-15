@@ -1,6 +1,7 @@
 import numpy as np
 from collections import defaultdict
 import gym
+import rollout_agents as agents
 from gym_go import gogame
 
 
@@ -58,12 +59,7 @@ class MonteCarloTreeSearchNode():
     # Continues the current state with random moves, does not save the moves, but checks who won then the game
     # at the end of the rollout
     def rollout(self):
-        current_rollout_state = self.state
-
-        while not gogame.game_ended(current_rollout_state):
-            action = gogame.random_action(current_rollout_state)
-            current_rollout_state = gogame.next_state(current_rollout_state, action)
-        return gogame.winning(current_rollout_state, self.komi)
+        return agents.rand_agent(self.state, self.komi, 5)
 
     # Updates statistics for the node and its parent chain
     def backpropagate(self, result):
@@ -109,13 +105,7 @@ class MonteCarloTreeSearchNode():
 
         for i in range(simulation_no):
             v = self._tree_policy()
-            reward = 0
-            # How many variants are considered
-            quality = 5
-            for i in range(quality):
-                reward += v.rollout()
-            reward /= quality
-            v.backpropagate(reward)
+            v.backpropagate(v.rollout())
 
         return self.best_child(c_param=0.)
 
