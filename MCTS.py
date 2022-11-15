@@ -110,9 +110,6 @@ class MonteCarloTreeSearchNode():
         return self.best_child(c_param=0.)
 
 
-def move(state, color):
-    root = MonteCarloTreeSearchNode(state, color, 0)
-    selected_node = root.best_action()
-    return selected_node
+
 
 
