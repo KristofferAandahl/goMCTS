@@ -1,15 +1,21 @@
 import gym
 from gym_go import gogame
+import MCTS
 
 
 go_env = gym.make('gym_go:go-v0', size=5, komi=0, reward_method='real')
 go_env.reset()
 
-first_action = (0, 4)
-second_action = (0, 0)
-state, reward, done, info = go_env.step(first_action)
+state, reward, done, info = go_env.step((1, 1))
 
-go_env.step(gogame.random_action(state))
+for i in range(25):
+    state, reward, done, info = go_env.step(MCTS.move(state, 'w').parent_action)
+    if done:
+        break
+    state, reward, done, info = go_env.step(MCTS.move(state, 'b').parent_action)
+    if done:
+        break
+    go_env.render('human')
 
+go_env.render('human')
 
-go_env.render('terminal')

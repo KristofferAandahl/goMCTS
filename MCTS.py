@@ -126,18 +126,3 @@ def move(state, color):
     return selected_node
 
 
-go_env = gym.make('gym_go:go-v0', size=5, komi=0, reward_method='real')
-go_env.reset()
-
-state, reward, done, info = go_env.step((1, 1))
-
-for i in range(25):
-    state, reward, done, info = go_env.step(move(state, 'w').parent_action)
-    if done:
-        break
-    state, reward, done, info = go_env.step(move(state, 'b').parent_action)
-    if done:
-        break
-    go_env.render('human')
-
-go_env.render('human')
