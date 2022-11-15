@@ -6,16 +6,16 @@ from rollout_agents import rand_agent
 
 go_env = gym.make('gym_go:go-v0', size=5, komi=0, reward_method='real')
 go_env.reset()
-state, reward, done, info = go_env.step((1,1))
+state = gogame.init_state(5)
 
 black = player('b', rand_agent, [10], 3, 0)
 white = player('w', rand_agent, [10], 3, 0)
 
 for i in range(25):
-    state, reward, done, info = go_env.step(white.move(state))
+    state, reward, done, info = go_env.step(black.move(state))
     if done:
         break
-    state, reward, done, info = go_env.step(black.move(state))
+    state, reward, done, info = go_env.step(white.move(state))
     if done:
         break
     go_env.render('human')
