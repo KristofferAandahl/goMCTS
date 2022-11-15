@@ -1,4 +1,5 @@
 import gym # https://github.com/aigagror/GymGo
+import traceback
 from gym_go import gogame
 from player import player
 from rollout_agents import rand_agent
@@ -26,4 +27,5 @@ while not done:
         state, reward, done, info = env.step(white.move(state))
         env.render(renderer)
     except: 
+        traceback.print_exc()
         break
