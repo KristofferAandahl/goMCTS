@@ -7,7 +7,7 @@ from gym_go import gogame
 
 class MonteCarloTreeSearchNode():
     # Color should be b or w
-    def __init__(self, state, color, komi, parent=None, parent_action=None):
+    def __init__(self, state, color, komi, simulation_no, agent, settings, parent=None, parent_action=None):
         self.state = state
         self.color = color
         self.parent = parent
@@ -20,6 +20,9 @@ class MonteCarloTreeSearchNode():
         self._untried_actions = None
         self._untried_actions = self.untried_actions()
         self.komi = komi
+        self.simulation_no = simulation_no
+        self.agent = agent
+        self.settings = settings
         return
 
     # A list of 1s and 0s. 1 is unvisited valid move. Used in expand to find moves to expand the tree with
@@ -48,7 +51,7 @@ class MonteCarloTreeSearchNode():
         self._untried_actions[action] = 0
         next_state = gogame.next_state(self.state, action)
         child_node = MonteCarloTreeSearchNode(
-            next_state, self.color, self.komi, parent=self, parent_action=action)
+            next_state, self.color, self.komi,  self.simulation_no, self.agent, self.settings, parent=self, parent_action=action)
         self.children.append(child_node)
         return child_node
 
@@ -59,7 +62,7 @@ class MonteCarloTreeSearchNode():
     # Continues the current state with random moves, does not save the moves, but checks who won then the game
     # at the end of the rollout
     def rollout(self):
-        return agents.rand_agent(self.state, self.komi, 5)
+        return self.agent(self.state, self.komi, self.settings[0])
 
     # Updates statistics for the node and its parent chain
     def backpropagate(self, result):
@@ -101,9 +104,8 @@ class MonteCarloTreeSearchNode():
 
     def best_action(self):
         # How many moves are considered
-        simulation_no = 100
 
-        for i in range(simulation_no):
+        for i in range(self.simulation_no):
             v = self._tree_policy()
             v.backpropagate(v.rollout())
 
