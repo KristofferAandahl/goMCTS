@@ -67,7 +67,7 @@ class MonteCarloTreeSearchNode():
     # Updates statistics for the node and its parent chain
     def backpropagate(self, result):
         self._number_of_visits += 1.
-        self._results[result] += 1.
+        self._results[np.sign(result)] += abs(result)
         if self.parent:
             self.parent.backpropagate(result)
 

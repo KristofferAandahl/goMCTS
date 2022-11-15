@@ -2,6 +2,7 @@
 # if it thinks white leads, 0 if it thinks it is a tie and positive values for black leads
 from gym_go import gogame
 import gym
+import numpy as np
 
 
 # Creates random moves until the game is done and returns the winner
@@ -15,3 +16,9 @@ def rand_agent(state, komi, settings):
         score += gogame.winning(current_rollout_state, komi)
     return score / settings[0]
 
+
+# Checks the score in the state
+# Creates an aggresive AI which struggles with keeping groups alive
+def score_agent(state, komi, settings):
+    b, w = gogame.areas(state)
+    return b - w - komi
