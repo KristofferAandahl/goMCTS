@@ -27,7 +27,6 @@ def score_agent(state, komi, settings):
     return b - w - komi
 
 
-# settings[0] is which color the agent is
 def lib_agent(state, komi, settings):
     libb, libw = gogame.liberties(state)
     board = []
@@ -35,6 +34,9 @@ def lib_agent(state, komi, settings):
         board = libb
     else:
         board = libw
+    if len(settings) == 1:
+        settings.append(1)
+        settings.append(1)
     _groups = go_utils.groups(state, settings[0])
     libs = 0
     for i in board:
@@ -44,7 +46,15 @@ def lib_agent(state, komi, settings):
     if _groups == 0:
         _groups = 1
     if settings[0] == 'b':
-        return (libs / _groups) + go_utils.stones(state, settings[0])
+        return (libs * settings[1]) / (_groups * settings[2])
     else:
-        return (-libs / _groups) - go_utils.stones(state, settings[0])
+        return -((libs * settings[1]) / (_groups * settings[2]))
+
+
+# settings[0] is which color the agent is, [1] modifier to liberties, [2] groups and [3] stones
+def extended_lib_agent(state, komi, settings):
+    if settings[0] == 'b':
+        return lib_agent(state, komi, settings) + (go_utils.stones(state, settings[0])*settings[3])
+    else:
+        return lib_agent(state, komi, settings) - (go_utils.stones(state, settings[0])*settings[3])
 
