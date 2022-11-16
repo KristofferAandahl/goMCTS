@@ -1,12 +1,23 @@
 import numpy as np
-from collections import defaultdict
 from gym_go import gogame
+from collections import defaultdict
 
 class MonteCarloTreeSearchNode():
-    # Color should be b or w
-    def __init__(self, state, color, komi, simulation_no, agent, settings, parent=None, parent_action=None):
+    """
+    Class representing a node in the Monte Carlo Tree Search for Go.
+
+    Monte Carlo Tree Search (MCTS) is a search technique in the field of Artificial Intelligence (AI). It is a probabilistic and heuristic driven search algorithm that combines the classic tree search implementations alongside machine learning principles of reinforcement learning. In MCTS, nodes are the building blocks of the search tree. These nodes are formed based on the outcome of a number of simulations. The process of MCTS can be broken down into four distinct steps: selection, expansion, simulation and backpropagation.
+    """
+
+    def __init__(self, state, color:str, komi:int, simulation_no:int, agent, settings:list, parent=None, parent_action=None):
         self.state = state
+        if color not in {'b', 'w'}:
+            raise ValueError("color must be 'b' or 'w'")
         self.color = color
+        self.settings = settings
+        self.komi = komi
+        self.simulation_no = simulation_no
+        self.agent = agent
         self.parent = parent
         self.parent_action = parent_action
         self.children = []
@@ -16,93 +27,95 @@ class MonteCarloTreeSearchNode():
         self._results[-1] = 0
         self._untried_actions = None
         self._untried_actions = self.untried_actions()
-        self.komi = komi
-        self.simulation_no = simulation_no
-        self.agent = agent
-        self.settings = settings
-        return
 
-    # A list of 1s and 0s. 1 is unvisited valid move. Used in expand to find moves to expand the tree with
     def untried_actions(self):
+        """Returns a List over all valid moves that it not yet visited. Used when expanding the tree."""
         self._untried_actions = list(gogame.valid_moves(self.state))
         return self._untried_actions
 
     def n(self):
+        """Returns the number of times the node has been visited."""
         return self._number_of_visits
 
-    # Method for finding nodes winrate. Result[0] is number of ties, [1] is number of wins and [-1] is losses
     def q(self):
-        black = self._results[1]
-        white = self._results[-1]
+        """Returns number of wins more than opponent."""
+        black = self._results[1]    # results[1] is number of black wins
+        white = self._results[-1]   # results[-1] is black losses
+
         if self.color == 'b':
             return black - white
         else:
             return white - black
 
-    # Creates a new node based on a random move and updates the untried action list
     def expand(self):
+        """Creates a new node based on a random move. Updates untried_actions. Returns new child node."""
         action = gogame.random_action(self.state)
+
         while self._untried_actions[action] == 0:
             action = gogame.random_action(self.state)
 
         self._untried_actions[action] = 0
         next_state = gogame.next_state(self.state, action)
+
         child_node = MonteCarloTreeSearchNode(
-            next_state, self.color, self.komi,  self.simulation_no, self.agent, self.settings, parent=self, parent_action=action)
+            next_state, 
+            self.color, 
+            self.komi,  
+            self.simulation_no, 
+            self.agent, 
+            self.settings, 
+            parent=self, 
+            parent_action=action
+        )
+
         self.children.append(child_node)
         return child_node
 
-    # Checks if game is finished in the current node
     def is_terminal_node(self):
+        """Checks if game has ended (e.g. win/loss/draw)."""
         return gogame.game_ended(self.state)
 
-    # Continues the current state with random moves, does not save the moves, but checks who won then the game
-    # at the end of the rollout
     def rollout(self):
+        """Completes one playout from current node based on agent. Does not save the moves, but checks for a winner at the end of the playout."""
         return self.agent(self.state, self.komi, self.settings)
 
-    # Updates statistics for the node and its parent chain
     def backpropagate(self, result):
-        self._number_of_visits += 1.
+        """Use the result of the rollout to update information in nodes on the current branch."""
+        self._number_of_visits += 1
         self._results[np.sign(result)] += abs(result)
+
         if self.parent:
             self.parent.backpropagate(result)
 
-    # Checks if all moves are checked in the current node
     def is_fully_expanded(self):
+        """Unless the game ends decisively (e.g. win/loss/draw) for either player, create one (or more) child nodes. Child nodes are any valid moves from the game position defined by current leaf node."""
         expand = 0
-        for i in self._untried_actions:
-            expand += i
-        return expand == 0
+        for action in self._untried_actions:
+            expand += action
+
+        return (expand == 0)
 
     def best_child(self, c_param=0.1):
+        """Selects the node with the highest estimated value. Uses the Upper Confidence Bound (UCB) formula for node values."""
+        # TODO: Er dette UCB eller en annen variant? 
         choices_weights = [(c.q() / c.n()) + c_param * np.sqrt((2 * np.log(self.n()) / c.n())) for c in self.children]
         return self.children[np.argmax(choices_weights)]
 
-    # Defines how the tree comitts rollouts. Currently unused. Better policies creates a more efficient system
-    def rollout_policy(self):
-        possible_moves = gogame.valid_moves(self.state)
-        r = np.random.randint(len(possible_moves))
-        while possible_moves(r) == 0:
-            r = np.random.randint(len(possible_moves))
-        return r
-
-    # Drives the tree expansion
     def _tree_policy(self):
-
+        """Construct the path from root to most promising leaf node. A leaf node is a node which has unexplored child node(s)."""
         current_node = self
-        while not current_node.is_terminal_node():
 
+        while not current_node.is_terminal_node():
             if not current_node.is_fully_expanded():
                 return current_node.expand()
             else:
                 current_node = current_node.best_child()
+        
         return current_node
 
     def best_action(self):
-        # How many moves are considered
-
-        for i in range(self.simulation_no):
+        """Selects best action based on branch with most calculated value."""
+        for _ in range(self.simulation_no):
             v = self._tree_policy()
             v.backpropagate(v.rollout())
 
