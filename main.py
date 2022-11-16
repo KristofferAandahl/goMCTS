@@ -1,8 +1,8 @@
 import gym # https://github.com/aigagror/GymGo
 import traceback
 from gym_go import gogame
-from player import player
-from rollout_agents import rand_agent
+from go_ai.player import player
+from go_ai.mcts import rollout_agents
 
 # Game variables
 renderer = 'terminal'           # 'terminal' or 'human'
@@ -17,8 +17,8 @@ env.reset()
 # Run game
 done = 0
 state = gogame.init_state(boardsize)    # Initial boardstate (empty)
-black = player('b', rand_agent, [10], 3, komi)
-white = player('w', rand_agent, [10], 3, komi)
+black = player('b', rollout_agents.rand_agent, [10], 3, komi)
+white = player('w', rollout_agents.rand_agent, [10], 3, komi)
 
 while not done:
     try:

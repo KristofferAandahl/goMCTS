@@ -1,4 +1,4 @@
-import MCTS
+from go_ai.mcts import MCTS
 
 class player:
     def __init__(self, color, agent, settings, simulation_no, komi):
