@@ -9,7 +9,7 @@ class MonteCarloTreeSearchNode():
     Monte Carlo Tree Search (MCTS) is a search technique in the field of Artificial Intelligence (AI). It is a probabilistic and heuristic driven search algorithm that combines the classic tree search implementations alongside machine learning principles of reinforcement learning. In MCTS, nodes are the building blocks of the search tree. These nodes are formed based on the outcome of a number of simulations. The process of MCTS can be broken down into four distinct steps: selection, expansion, simulation and backpropagation.
     """
 
-    def __init__(self, state, color:str, komi:int, simulation_no:int, agent, settings:list, parent=None, parent_action=None):
+    def __init__(self, state, color:str, komi:float, simulation_no:int, agent, settings:list, parent=None, parent_action=None):
         self.state = state
         if color not in {'b', 'w'}:
             raise ValueError("color must be 'b' or 'w'")
@@ -97,8 +97,7 @@ class MonteCarloTreeSearchNode():
 
     def best_child(self, c_param=0.1):
         """Selects the node with the highest estimated value. Uses the Upper Confidence Bound (UCB) formula for node values."""
-        # TODO: Er dette UCB eller en annen variant? 
-        choices_weights = [(c.q() / c.n()) + c_param * np.sqrt((2 * np.log(self.n()) / c.n())) for c in self.children]
+        choices_weights = [(child.q() / child.n()) + c_param * np.sqrt(np.log(self.n()) / child.n()) for child in self.children]
         return self.children[np.argmax(choices_weights)]
 
     def _tree_policy(self):
@@ -119,4 +118,4 @@ class MonteCarloTreeSearchNode():
             v = self._tree_policy()
             v.backpropagate(v.rollout())
 
-        return self.best_child(c_param=0.)
+        return self.best_child()
