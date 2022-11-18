@@ -11,7 +11,7 @@ class MonteCarloTreeSearchNode():
     Monte Carlo Tree Search (MCTS) is a search technique in the field of Artificial Intelligence (AI). It is a probabilistic and heuristic driven search algorithm that combines the classic tree search implementations alongside machine learning principles of reinforcement learning. In MCTS, nodes are the building blocks of the search tree. These nodes are formed based on the outcome of a number of simulations. The process of MCTS can be broken down into four distinct steps: selection, expansion, simulation and backpropagation.
     """
 
-    def __init__(self, state, color: str, komi: float, simulation_no: int, agent, settings: list, parent=None,
+    def __init__(self, state, color: str, komi: float, simulation_no: int, tree_policy, agent, settings: list, parent=None,
                  parent_action=None):
         self.state = state
         if color not in {'b', 'w'}:
@@ -30,6 +30,7 @@ class MonteCarloTreeSearchNode():
         self._results[-1] = 0
         self._untried_actions = None
         self._untried_actions = self.untried_actions()
+        self.tree_policy = tree_policy
 
     def untried_actions(self):
         """Returns a List over all valid moves that it not yet visited. Used when expanding the tree."""
@@ -65,6 +66,7 @@ class MonteCarloTreeSearchNode():
             self.color,
             self.komi,
             self.simulation_no,
+            self.tree_policy,
             self.agent,
             self.settings,
             parent=self,
@@ -107,7 +109,7 @@ class MonteCarloTreeSearchNode():
     def best_action(self):
         """Selects best action based on branch with most calculated value."""
         for _ in range(self.simulation_no):
-            v = tree_policies.width_first(self)
+            v = self.tree_policy(self)
             v.backpropagate(v.rollout())
 
         return self.best_child()
