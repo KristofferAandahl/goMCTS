@@ -1,3 +1,7 @@
+from gym_go import gogame
+import numpy as np
+from copy import deepcopy
+
 def groups(state, color):
     # TODO: Support non 5*5 boards
     groups = 0
@@ -46,3 +50,29 @@ def stones(state, color):
                 _stones += 1
 
     return _stones
+
+
+
+"""
+Returns capture coordinates for given color
+Currently returns first possible capture seen
+Possible upgrade: find all possible captures for given state, return most profitable capture coordinates
+"""
+def checkForCapture(env, state, boardsize, color):
+    if color == 'w':
+        stoneCount = stones(state, 'b')
+        gettingAttacked = 'b'
+    else:
+        stoneCount = stones(state, 'w')
+        gettingAttacked = 'w'
+
+    for i in range(boardsize):
+        for j in range(boardsize):
+                testEnv = deepcopy(env)
+                if state[3][i][j] != 1:
+                    state1, reward, done, info = testEnv.step((i,j))
+                    if stones(state1, gettingAttacked) < stoneCount:
+                        #print(f"capture move: ({i},{j})")
+                        env.render()
+                        return i,j
+    return -1,-1
