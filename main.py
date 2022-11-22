@@ -2,7 +2,8 @@ import random
 import gym # https://github.com/aigagror/GymGo
 from gym_go import gogame
 from go_ai.player import Player
-from go_ai.mcts import rollout_agents
+from go_ai.mcts.rollout_agents import score_agent
+from go_ai.mcts.tree_policies import width_first
 
 # Game variables
 renderer = 'terminal'           # 'terminal' or 'human'
@@ -17,8 +18,8 @@ env.reset()
 
 # Setup game
 state = gogame.init_state(boardsize)    # Initial boardstate (empty)
-black_player = Player('b', rollout_agents.rand_agent, [10], 3, komi)
-white_player = Player('w', rollout_agents.rand_agent, [10], 3, komi)
+black_player = Player('b', score_agent, [10], 3, width_first, komi)
+white_player = Player('w', score_agent, [10], 3, width_first, komi)
 
 # Run game
 done = 0

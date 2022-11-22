@@ -1,6 +1,8 @@
 import numpy as np
 from gym_go import gogame
 from collections import defaultdict
+from go_ai.mcts import tree_policies
+
 
 class MonteCarloTreeSearchNode():
     """
@@ -9,7 +11,8 @@ class MonteCarloTreeSearchNode():
     Monte Carlo Tree Search (MCTS) is a search technique in the field of Artificial Intelligence (AI). It is a probabilistic and heuristic driven search algorithm that combines the classic tree search implementations alongside machine learning principles of reinforcement learning. In MCTS, nodes are the building blocks of the search tree. These nodes are formed based on the outcome of a number of simulations. The process of MCTS can be broken down into four distinct steps: selection, expansion, simulation and backpropagation.
     """
 
-    def __init__(self, state, color:str, komi:float, simulation_no:int, agent, settings:list, parent=None, parent_action=None):
+    def __init__(self, state, color: str, komi: float, simulation_no: int, tree_policy, agent, settings: list, parent=None,
+                 parent_action=None):
         self.state = state
         if color not in {'b', 'w'}:
             raise ValueError("color must be 'b' or 'w'")
@@ -27,6 +30,7 @@ class MonteCarloTreeSearchNode():
         self._results[-1] = 0
         self._untried_actions = None
         self._untried_actions = self.untried_actions()
+        self.tree_policy = tree_policy
 
     def untried_actions(self):
         """Returns a List over all valid moves that it not yet visited. Used when expanding the tree."""
@@ -39,8 +43,8 @@ class MonteCarloTreeSearchNode():
 
     def q(self):
         """Returns number of wins more than opponent."""
-        black = self._results[1]    # results[1] is number of black wins
-        white = self._results[-1]   # results[-1] is black losses
+        black = self._results[1]  # results[1] is number of black wins
+        white = self._results[-1]  # results[-1] is black losses
 
         if self.color == 'b':
             return black - white
@@ -58,13 +62,14 @@ class MonteCarloTreeSearchNode():
         next_state = gogame.next_state(self.state, action)
 
         child_node = MonteCarloTreeSearchNode(
-            next_state, 
-            self.color, 
-            self.komi,  
-            self.simulation_no, 
-            self.agent, 
-            self.settings, 
-            parent=self, 
+            next_state,
+            self.color,
+            self.komi,
+            self.simulation_no,
+            self.tree_policy,
+            self.agent,
+            self.settings,
+            parent=self,
             parent_action=action
         )
 
@@ -97,25 +102,14 @@ class MonteCarloTreeSearchNode():
 
     def best_child(self, c_param=0.1):
         """Selects the node with the highest estimated value. Uses the Upper Confidence Bound (UCB) formula for node values."""
-        choices_weights = [(child.q() / child.n()) + c_param * np.sqrt(np.log(self.n()) / child.n()) for child in self.children]
+        choices_weights = [(child.q() / child.n()) + c_param * np.sqrt(np.log(self.n()) / child.n()) for child in
+                           self.children]
         return self.children[np.argmax(choices_weights)]
-
-    def _tree_policy(self):
-        """Construct the path from root to most promising leaf node. A leaf node is a node which has unexplored child node(s)."""
-        current_node = self
-
-        while not current_node.is_terminal_node():
-            if not current_node.is_fully_expanded():
-                return current_node.expand()
-            else:
-                current_node = current_node.best_child()
-        
-        return current_node
 
     def best_action(self):
         """Selects best action based on branch with most calculated value."""
         for _ in range(self.simulation_no):
-            v = self._tree_policy()
+            v = self.tree_policy(self)
             v.backpropagate(v.rollout())
 
         return self.best_child()
