@@ -3,7 +3,6 @@ import numpy as np
 from copy import deepcopy
 
 def groups(state, color):
-    # TODO: Support non 5*5 boards
     groups = 0
     black, white, _, _, _, _ = state
     board = []
@@ -16,7 +15,7 @@ def groups(state, color):
     if board[0, 0] == 1:
         groups += 1
 
-    for i in range(1, 5):
+    for i in range(1, len(board)):
         if board[0, i] == 1:
             if board[0, i - 1] == 0:
                 groups += 1
@@ -24,8 +23,8 @@ def groups(state, color):
             if board[i - 1, 0] == 0:
                 groups += 1
 
-    for i in range(1, 5):
-        for j in range(1, 5):
+    for i in range(1, len(board)):
+        for j in range(1, len(board)):
             if board[i, j] == 1:
                 if board[i - 1, j] == 0 and board[i, j - 1] == 0:
                     groups += 1
@@ -34,7 +33,6 @@ def groups(state, color):
 
 
 def stones(state, color):
-    # TODO: Support non 5*5 boards
     black, white, _, _, _, _ = state
     board = []
     _stones = 0
@@ -44,8 +42,8 @@ def stones(state, color):
     else:
         board = white
 
-    for i in range(5):
-        for j in range(5):
+    for i in range(len(board)):
+        for j in range(len(board)):
             if board[i, j] == 1:
                 _stones += 1
 
