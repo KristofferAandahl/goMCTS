@@ -1,8 +1,6 @@
 import numpy as np
 from gym_go import gogame
 from collections import defaultdict
-from go_ai.mcts import tree_policies
-
 
 class MonteCarloTreeSearchNode():
     """
@@ -11,8 +9,7 @@ class MonteCarloTreeSearchNode():
     Monte Carlo Tree Search (MCTS) is a search technique in the field of Artificial Intelligence (AI). It is a probabilistic and heuristic driven search algorithm that combines the classic tree search implementations alongside machine learning principles of reinforcement learning. In MCTS, nodes are the building blocks of the search tree. These nodes are formed based on the outcome of a number of simulations. The process of MCTS can be broken down into four distinct steps: selection, expansion, simulation and backpropagation.
     """
 
-    def __init__(self, state, color: str, komi: float, simulation_no: int, tree_policy, agent, settings: list, parent=None,
-                 parent_action=None):
+    def __init__(self, state, color: str, komi: float, simulation_no: int, tree_policy, agent, settings: list, parent=None, parent_action=None):
         self.state = state
         if color not in {'b', 'w'}:
             raise ValueError("color must be 'b' or 'w'")

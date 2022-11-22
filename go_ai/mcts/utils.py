@@ -2,7 +2,6 @@ from gym_go import gogame
 import numpy as np
 from copy import deepcopy
 
-
 def groups(state, color):
     groups = 0
     black, white, _, _, _, _ = state
@@ -50,15 +49,12 @@ def stones(state, color):
 
     return _stones
 
-
-"""
-Returns capture coordinates for given color
-Currently returns first possible capture seen
-Possible upgrade: find all possible captures for given state, return most profitable capture coordinates
-"""
-
-
 def checkForCapture(env, state, boardsize, color):
+    """
+    Returns capture coordinates for given color.
+    Currently returns first possible capture seen.
+    """
+    # TODO: Possible upgrade: find all possible captures for given state, return most profitable capture coordinates
     if color == 'w':
         stoneCount = stones(state, 'b')
         gettingAttacked = 'b'
@@ -68,14 +64,13 @@ def checkForCapture(env, state, boardsize, color):
 
     for i in range(boardsize):
         for j in range(boardsize):
-            testEnv = deepcopy(env)
-            if state[3][i][j] != 1:
-                state1, reward, done, info = testEnv.step((i, j))
-                if stones(state1, gettingAttacked) < stoneCount:
-                    # print(f"capture move: ({i},{j})")
-                    env.render()
-                    return i, j
-    return -1, -1
+                testEnv = deepcopy(env)
+                if state[3][i][j] != 1:
+                    state1, _, _, _ = testEnv.step((i,j))
+                    if stones(state1, gettingAttacked) < stoneCount:
+                        env.render()
+                        return i,j
+    return -1,-1
 
 
 def distance_to_stone(state, pos):
