@@ -2,6 +2,8 @@
 # values if it thinks white leads, 0 if it is a tie and positive values when black side is in the lead
 from gym_go import gogame
 from go_ai.mcts import utils
+import numpy as np
+
 
 def rand_agent(state, komi, settings):
     """
@@ -25,6 +27,7 @@ def rand_agent(state, komi, settings):
 
     return score / settings[0]
 
+
 def score_agent(state, komi, settings):
     """
     Checks score in current state. Aggressive.
@@ -36,6 +39,7 @@ def score_agent(state, komi, settings):
     """
     b, w = gogame.areas(state)
     return b - w - komi
+
 
 def lib_agent(state, komi, settings):
     """
@@ -74,6 +78,7 @@ def lib_agent(state, komi, settings):
     else:
         return -((libs * settings[1]) / (_groups * settings[2]))
 
+
 def extended_lib_agent(state, komi, settings):
     """
     Parameters:
@@ -85,7 +90,43 @@ def extended_lib_agent(state, komi, settings):
     - settings[3]: stones
     """
     if settings[0] == 'b':
-        return lib_agent(state, komi, settings) + (utils.stones(state, settings[0])*settings[3])
+        return lib_agent(state, komi, settings) + (utils.stones(state, settings[0]) * settings[3])
     else:
-        return lib_agent(state, komi, settings) - (utils.stones(state, settings[0])*settings[3])
+        return lib_agent(state, komi, settings) - (utils.stones(state, settings[0]) * settings[3])
 
+
+def influence_agent(state, komi, settings):
+    influence = [0, 0]
+    black, white, _, _, _, _ = state
+    b_stones = []
+    w_stones = []
+    for y in range(len(black)):
+        for x in range(len(black)):
+            if black[y, x] == 1:
+                b_stones.append((y, x))
+            if white[y, x] == 1:
+                w_stones.append((y, x))
+
+    for y in range(len(black)):
+        for x in range(len(black)):
+            db = []
+            dw = []
+            for stone in b_stones:
+                db.append(abs(y - stone[0]) + abs(x - stone[1]))
+            for stone in b_stones:
+                dw.append(abs(y - stone[0]) + abs(x - stone[1]))
+            if len(db) == 0 or len(dw) == 0:
+                return len(db) - len(dw) - komi
+            b = db[np.argmin(db)]
+            w = dw[np.argmin(dw)]
+            if b < w:
+                influence[1] += b
+            elif b > w:
+                influence[0] += w
+    return influence[1] - influence[0] - komi
+
+
+def combined_score_and_influence_agent(state, komi, settings):
+    if gogame.game_ended(state) == 1:
+        return (settings[0] * influence_agent(state, komi, settings) + settings[1] * score_agent(state, komi, settings)) * 10
+    return settings[0] * influence_agent(state, komi, settings) + settings[1] * score_agent(state, komi, settings)
