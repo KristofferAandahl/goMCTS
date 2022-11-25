@@ -130,3 +130,20 @@ def combined_score_and_influence_agent(state, komi, settings):
     if gogame.game_ended(state) == 1:
         return (settings[0] * influence_agent(state, komi, settings) + settings[1] * score_agent(state, komi, settings)) * 10
     return settings[0] * influence_agent(state, komi, settings) + settings[1] * score_agent(state, komi, settings)
+
+
+def combined_stones_and_influence_agent(state, komi, settings):
+    if settings[2] == 'b':
+        return settings[0] * influence_agent(state, komi, settings) + settings[1] * (utils.stones(state, 'b')-utils.stones(state, 'w'))
+    else:
+        return settings[0] * influence_agent(state, komi, settings) + settings[1] * (utils.stones(state, 'w')-utils.stones(state, 'b'))
+
+
+
+
+def div_by_group(state, komi, settings):
+    sc_inf = combined_score_and_influence_agent(state, komi, settings)
+    if np.sign(sc_inf) == -1 and settings[2] == 'b':
+        return sc_inf
+    else:
+        return sc_inf / utils.groups(state, settings[2])

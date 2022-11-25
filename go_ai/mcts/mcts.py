@@ -103,6 +103,12 @@ class MonteCarloTreeSearchNode():
                            self.children]
         return self.children[np.argmax(choices_weights)]
 
+    def worst_child(self, c_param=0.1):
+        """Selects the node with the lowest estimated value. Uses the Upper Confidence Bound (UCB) formula for node values."""
+        choices_weights = [(child.q() / child.n()) + c_param * np.sqrt(np.log(self.n()) / child.n()) for child in
+                           self.children]
+        return self.children[np.argmin(choices_weights)]
+
     def best_action(self):
         """Selects best action based on branch with most calculated value."""
         for _ in range(self.simulation_no):
