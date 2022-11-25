@@ -1,5 +1,3 @@
-from gym_go import gogame
-import numpy as np
 from copy import deepcopy
 
 def groups(state, color):

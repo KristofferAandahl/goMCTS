@@ -21,9 +21,17 @@ state = gogame.init_state(boardsize)    # Initial boardstate (empty)
 black_player = Player('b', combined_stones_and_influence_agent, [3, 1, 'b'], 5_000, width_first, komi)
 white_player = Player('w', combined_score_and_influence_agent, [3,1], 5_000, width_first, komi)
 
+def player_move():
+    """Prompts player to input coordinates for next move. Returns value for env.step()."""
+    print("Enter next move:")
+    player_move_x = input("x: ")
+    player_move_y = input("y: ")
+    return (int(player_move_y),int(player_move_x))
+
 # Run game
 done = 0
 if not player:
+    # Run two AIs against eachother until done
     while not done:
         state, reward, done, info = env.step(black_player.move(state))
         env.render(renderer)
@@ -44,18 +52,12 @@ else:
             if done:
                 break
             # Player turn
-            print("Enter next move:")
-            player_move_x = input("x: ")
-            player_move_y = input("y: ")
-            state, reward, done, info = env.step((int(player_move_y),int(player_move_x)))
+            state, reward, done, info = env.step(player_move())
             env.render(renderer)
     else:
         while not done:
             # Player turn
-            print("Enter next move:")
-            player_move_x = input("x: ")
-            player_move_y = input("y: ")
-            state, reward, done, info = env.step((int(player_move_y),int(player_move_x)))
+            state, reward, done, info = env.step(player_move())
             env.render(renderer)
             if done:
                 break
