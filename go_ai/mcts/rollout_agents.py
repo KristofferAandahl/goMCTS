@@ -136,7 +136,7 @@ def combined_stones_and_influence_agent(state, komi, settings):
     if settings[2] == 'b':
         return settings[0] * influence_agent(state, komi, settings) + settings[1] * (utils.stones(state, 'b')-utils.stones(state, 'w'))
     else:
-        return settings[0] * influence_agent(state, komi, settings) + settings[1] * (utils.stones(state, 'w')-utils.stones(state, 'b'))
+        return -(settings[0] * influence_agent(state, komi, settings) + settings[1] * (utils.stones(state, 'w')-utils.stones(state, 'b')))
 
 
 
