@@ -7,10 +7,10 @@ from go_ai.mcts.tree_policies import width_first, negative_width_first
 
 # Game variables
 renderer = 'terminal'           # 'terminal' or 'human'
-boardsize = 7                  # From task: 5x5 or 7x7
-komi = 6.5                      # Standard komi is 7.5 points under the Chinese rules (https://en.wikipedia.org/wiki/Komi_(Go)) for 19x19 boards.
+boardsize = 5                   # From task: 5x5 or 7x7
+komi = 2.5                      # Standard komi is 7.5 points under the Chinese rules (https://en.wikipedia.org/wiki/Komi_(Go)) for 19x19 boards.
 reward_method = 'heuristic'     # The reward is black 'area - white area'. If black won, the reward is 'BOARD_SIZE**2'. If white won, the reward is '-BOARD_SIZE**2'. If tied, the reward is '0'.
-player = 0                      # 1 = play against the AI. 0 = let the machine play against itself.
+player = 1                      # 1 = play against the AI. 0 = let the machine play against itself.
 
 # Initialize environment
 env = gym.make('gym_go:go-v0', size=boardsize, komi=komi, reward_method=reward_method)
@@ -18,8 +18,8 @@ env.reset()
 
 # Setup game
 state = gogame.init_state(boardsize)    # Initial boardstate (empty)
-black_player = Player('b', combined_stones_and_influence_agent, [3, 1, 'b'], 5_000, width_first, komi)
-white_player = Player('w', combined_score_and_influence_agent, [3,1], 5_000, width_first, komi)
+black_player = Player('b', combined_stones_and_influence_agent, [1.5,1,'b'], 10_000, width_first, komi)
+white_player = Player('w', combined_score_and_influence_agent, [1.5,1], 10_000, width_first, komi)
 
 def player_move():
     """Prompts player to input coordinates for next move. Returns value for env.step()."""
@@ -41,8 +41,6 @@ if not player:
         env.render(renderer)
 
 else:
-    # Print board to make it easier to place first stone
-    env.render(renderer)
     # Randomize color
     if random.randrange(2):
         while not done:
@@ -56,6 +54,8 @@ else:
             env.render(renderer)
     else:
         while not done:
+            # Print board to make it easier to place first stone
+            env.render(renderer)
             # Player turn
             state, reward, done, info = env.step(player_move())
             env.render(renderer)
