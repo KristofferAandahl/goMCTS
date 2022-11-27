@@ -28,6 +28,27 @@ def rand_agent(state, komi, settings):
     return score / settings[0]
 
 
+def custom_depth_agent(state, komi, settings):
+    """
+    :param state:
+    :param komi:
+    :param settings: 0: max depth, 1: nodes, 2: evaluation agent, 3 evaluation agents settings as a list
+    :return: Evaluation of current state
+    """
+    states = [state]
+    for _ in range(settings[0]):
+        action = gogame.random_action(states[-1])
+        states.append(gogame.next_state(states[-1], action))
+    for _ in range(settings[1] - settings[0]):
+        state = states[np.random.randint(0, len(states))]
+        action = gogame.random_action(state)
+        states.append(gogame.next_state(state, action))
+    score = 0
+    for state in states:
+        score += settings[2](state, komi, settings[3])
+    return score / len(states)
+
+
 def score_agent(state, komi, settings):
     """
     Checks score in current state. Aggressive.
@@ -128,17 +149,18 @@ def influence_agent(state, komi, settings):
 
 def combined_score_and_influence_agent(state, komi, settings):
     if gogame.game_ended(state) == 1:
-        return (settings[0] * influence_agent(state, komi, settings) + settings[1] * score_agent(state, komi, settings)) * 10
+        return (settings[0] * influence_agent(state, komi, settings) + settings[1] * score_agent(state, komi,
+                                                                                                 settings)) * 10
     return settings[0] * influence_agent(state, komi, settings) + settings[1] * score_agent(state, komi, settings)
 
 
 def combined_stones_and_influence_agent(state, komi, settings):
     if settings[2] == 'b':
-        return settings[0] * influence_agent(state, komi, settings) + settings[1] * (utils.stones(state, 'b')-utils.stones(state, 'w'))
+        return settings[0] * influence_agent(state, komi, settings) + settings[1] * (
+                    utils.stones(state, 'b') - utils.stones(state, 'w'))
     else:
-        return -(settings[0] * influence_agent(state, komi, settings) + settings[1] * (utils.stones(state, 'w')-utils.stones(state, 'b')))
-
-
+        return -(settings[0] * influence_agent(state, komi, settings) + settings[1] * (
+                    utils.stones(state, 'w') - utils.stones(state, 'b')))
 
 
 def div_by_group(state, komi, settings):
